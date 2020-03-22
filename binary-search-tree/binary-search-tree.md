@@ -11,13 +11,11 @@
   * 树的高度也就是根节点的高度
   * 一个完满二叉树是每个节点有两个或则不存在子节点
   * 一个完全二叉树，他除了底层是被完全填满的，底层的填充规则是从左到右
+![image.png](//static.cnodejs.org/FmcaHW1GAh_Vmmx1z1fe9e4084KB)
 
 一个完全二叉树是一个特殊的树，它提供极好的平衡在节点数量和高度之间，它的高度h和节点N的关系可以表示为h=O(log N)。我们能够很容易的通过层级推算出这个层级的节点总计
+![image.png](//static.cnodejs.org/Fh4jkvw47NsBq3f7QoLZe7IgQHlC)
 
-
-```
-n = 1 + 2 + 4 + ... + 2h-1 + 2h = 2h+1 - 1
-```
 =》
 h = O(log n)
 
@@ -47,10 +45,13 @@ h = O(log n)
 * 后序遍历 - 9, 1, 2, 12, 7, 5, 3, 11, 4, 8
 * 广度遍历 - 8, 5, 4, 9, 7, 11, 1, 12, 3, 2*
   
+  ![image.png](//static.cnodejs.org/FnqZiTZzJnh6o1wdQy3Ska_eD4Lp)
 
 下面是1,2,3...7按照不同的遍历逻辑插入的例子
+![image.png](//static.cnodejs.org/FvpFuFkosuUhCy3w7X4D7j-3gKvl)
 
 如果我们遍历每个节点三次，那我们就可以使用同一个算法表示三种深度遍历，一个欧拉向导表示的是围绕二叉树随意走，但是每个边缘视为一堵墙，不能被穿过，在这个随意走的过程中，每个节点能够被浏览在左边，下边或则右边，这个欧拉向导我们浏览这个左边的过程叫做先序遍历，当我们浏览下边的过程，叫做中序遍历，当我们浏览右边的过程，叫做后序遍历
+![image.png](//static.cnodejs.org/FmjgRZ5Nx4naUYx67cZjxER2uB5n)
 
 #### 二叉树查找
 我们考虑一种特殊的二叉树叫做二叉查找树(BST),设计这种树的基础需求是能够有一种存储库能够提供有效的数据排序，查询和检索
@@ -61,12 +62,38 @@ h = O(log n)
 * 重复值是不被允许的
 
 下面这张图中所有的左节点的值都是小于10的，所有右边节点的值都是大于10的，因为每个左节点和右节点都是一个子二叉查找树，所以这个规则递归适合每一个节点
+![image.png](//static.cnodejs.org/FvoFNHhtOnKnyqqTDmi2CNTHzPm_)
 
 #### 实现
 因为原文使用的是java，我对nodejs比较熟悉，我使用nodejs来实现这个程序
 
 ##### 插入
 插入的逻辑和查找的逻辑十分相似，从根节点递归往下比较，直到符合查找二叉树的规则位为止，如果有重复的值，不做任务操作，行为停止
+```
+// insert
+function insert(value) {
+  function doInsert(tree) {
+    if (!tree) {
+      tree = node(value);
+    } else {
+      if (tree.value > value) {
+        if (!tree.left) {
+          tree.left = node(value);
+        } else {
+          doInsert(tree.left);
+        }
+      } else {
+        if (!tree.right) {
+          tree.right = node(value);
+        } else {
+          doInsert(tree.right);
+        }
+      }
+    }
+  }
+  doInsert(tree);
+}
+```
 
 ##### 练习
 给与一系列数字
@@ -74,9 +101,25 @@ h = O(log n)
 11,6,8,19,4,10,5,17,43,49,31
 ```
 画出一个二叉查找树通过上面这些数字
-
+![image.png](//static.cnodejs.org/FnVK8aMKfF5XJ4WR2G7XnniQbnEd)
 
 ##### 查找
+查找是从二叉查找树的根节点开始的，使用需要比较的数据和根节点比较(称呼整个过程为toSearch),如果和根节点的值不匹配，我们根据比较结果决定是和左节点还是右节点进行比较，如果数据的值大于根节点，就和右节点进行比较，反之则和左节点进行比较，同理向下递归处理直到找到匹配的值
 
+在查找二叉树中最坏的运行复杂度是O(h),h是树的高度，一颗有n个节点的二叉查找树的最小高度是O(log n) ,需要花费至少O(log n)次比较去查找需要的节点，最糟糕的情况是二叉查找树可能转换为链表，此时的查找时间为O(n)
 
+##### 删除
+删除比查找更复杂，有以下几种情况需要考虑（我们叫整个过程为toDelete）
+* 不在树上
+* 是叶子节点
+* 只有一个子节点
+* 有两个子节点
 
+如果toDelete的数据没有在节点上或则是叶子节点，那不需要做任何操作。如果删除的节点只有一个节点，类似于链表，我们仅仅需要跳过被删除的节点把整棵树链接起来
+![image.png](//static.cnodejs.org/Fg1ZlYD5kKZEU6ZJmR6OeJsl0ihD)
+删除有两个子节点的情况还是比较复杂的，首先整棵树会被分成两棵字树，一些内部的节点将会没办法遍历到，就像如下的情况
+![image.png](//static.cnodejs.org/FtQTQPwHHMfROQtHxPbW5XkOZBBD)
+删除策略如下，用左节点最大的节点代替被删除的节点，也可以使用右节点最小的节点代替被删除的节点，根据节点的对称性决定
+
+完整的demo可以参考[BST](https://github.com/TimLiu1/blog/blob/master/binary-search-tree/bst.js)
+[原文链接](http://www.cs.cmu.edu/~adamchik/15-121/lectures/Trees/trees.html)
